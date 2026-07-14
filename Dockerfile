@@ -22,11 +22,11 @@ COPY --from=build /out/bubbleclip /bubbleclip
 # uid 1000 matches the Node image's "node" user, so existing data volumes carry over
 COPY --from=build --chown=1000:1000 /out/data /app/data
 
-ENV PORT=9600 \
+ENV PORT=5678 \
     DATA_FILE=/app/data/clipboard.json
 
 USER 1000:1000
-EXPOSE 9600
+EXPOSE 5678
 VOLUME ["/app/data"]
 
 # the binary doubles as its own healthcheck probe (no shell in scratch)

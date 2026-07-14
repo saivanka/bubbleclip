@@ -12,7 +12,7 @@ services:
     build: .
     container_name: bubbleclip
     ports:
-      - "127.0.0.1:9600:9600" 
+      - "127.0.0.1:5678:5678"
     init: true
     volumes:
       - bubbleclip-data:/app/data

@@ -3,5 +3,5 @@
 # WebSockets are proxied automatically.
 
 bubbleclip.dpdns.org {
-	reverse_proxy bubbleclip:9600
+	reverse_proxy bubbleclip:5678
 }
