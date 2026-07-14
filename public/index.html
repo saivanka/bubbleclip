@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>BubbleClip — Network Clipboard</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🫧</text></svg>" />
+<script src="/vendor/gsap.min.js"></script>
+<script>window.gsap || document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"><\/script>');</script>
+<style>
+  :root, html[data-theme="dark"] {
+    --bg: #0a0d14;
+    --bg-img:
+      radial-gradient(900px 500px at 15% -10%, #16223f 0%, transparent 60%),
+      radial-gradient(800px 500px at 90% 110%, #1a1230 0%, transparent 55%);
+    --text: #e8ecf4;
+    --muted: #7e88a0;
+    --accent: #4f8cff;
+    --accent-2: #38d9a9;
+    --pink: #ff6bd6;
+    --danger: #ff6b6b;
+    --btn-border: #2a3145;
+    --dock-bg: rgba(19, 24, 38, .85);
+    --dock-border: #262e45;
+    --hint: #5a6480;
+    --kbd-bg: #1d2438;
+    --kbd-border: #2c3550;
+    --toast-bg: #1a2136;
+    --toast-border: #2c3550;
+    --bubble-color: rgba(80, 120, 220, .10);
+    --bubble-img:
+      radial-gradient(circle at 30% 25%, rgba(255,255,255,.35) 0%, rgba(255,255,255,.05) 25%, transparent 45%),
+      radial-gradient(circle at 70% 80%, rgba(120,180,255,.18) 0%, transparent 50%);
+    --bubble-border: rgba(140, 170, 255, .35);
+    --bubble-shadow: inset 0 0 22px rgba(120,160,255,.12), inset 0 -8px 20px rgba(56,217,169,.08), 0 8px 30px rgba(0,0,0,.35);
+    --bubble-hover-border: rgba(190, 210, 255, .8);
+    --bubble-hover-shadow: inset 0 0 26px rgba(140,180,255,.22), 0 8px 34px rgba(79,140,255,.35);
+    --latest-border: rgba(56,217,169,.75);
+    --latest-shadow: inset 0 0 24px rgba(56,217,169,.18), 0 0 24px rgba(56,217,169,.35), 0 8px 30px rgba(0,0,0,.35);
+  }
+  html[data-theme="light"] {
+    --bg: #f6f8fe;
+    --bg-img:
+      radial-gradient(1000px 620px at 8% -12%, #d9e6ff 0%, transparent 60%),
+      radial-gradient(900px 600px at 96% 12%, #efe2ff 0%, transparent 55%),
+      radial-gradient(750px 520px at 50% 112%, #d8f2ea 0%, transparent 55%);
+    --text: #1c2434;
+    --muted: #64708c;
+    --accent: #3b7cf7;
+    --accent-2: #0ca678;
+    --pink: #e35ac2;
+    --danger: #e5484d;
+    --btn-border: #d7dff2;
+    --dock-bg: rgba(255, 255, 255, .82);
+    --dock-border: #dfe6f5;
+    --hint: #8b96b0;
+    --kbd-bg: #eef2fb;
+    --kbd-border: #d7dff2;
+    --toast-bg: #ffffff;
+    --toast-border: #dfe6f5;
+    --bubble-color: rgba(255, 255, 255, .6);
+    --bubble-img:
+      radial-gradient(circle at 30% 25%, rgba(255,255,255,.95) 0%, rgba(255,255,255,.3) 28%, transparent 48%),
+      radial-gradient(circle at 72% 82%, rgba(120,170,255,.22) 0%, transparent 52%);
+    --bubble-border: rgba(120, 150, 235, .38);
+    --bubble-shadow: inset 0 0 20px rgba(140,170,255,.16), 0 12px 34px rgba(90,120,220,.16);
+    --bubble-hover-border: rgba(80, 120, 235, .7);
+    --bubble-hover-shadow: inset 0 0 24px rgba(120,160,255,.24), 0 14px 40px rgba(80,120,230,.28);
+    --latest-border: rgba(12,166,120,.65);
+    --latest-shadow: inset 0 0 22px rgba(12,166,120,.14), 0 0 22px rgba(12,166,120,.28), 0 12px 34px rgba(90,120,220,.14);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background-color: var(--bg);
+    background-image: var(--bg-img);
+    color: var(--text);
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: background-color .4s, color .4s;
+  }
+
+  /* ---------- header ---------- */
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 22px; flex: 0 0 auto; z-index: 5;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 600; letter-spacing: .3px; }
+  .logo {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: radial-gradient(circle at 32% 28%, rgba(255,255,255,.85) 0%, rgba(255,255,255,.12) 22%, transparent 40%),
+                linear-gradient(135deg, var(--accent), var(--pink));
+    box-shadow: 0 4px 18px rgba(79,140,255,.4), inset 0 0 12px rgba(255,255,255,.25);
+  }
+  .meta { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--muted); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--danger); display: inline-block; margin-right: 6px; transition: background .3s; }
+  .dot.on { background: var(--accent-2); box-shadow: 0 0 8px var(--accent-2); }
+  .btn-ghost {
+    background: none; border: 1px solid var(--btn-border); color: var(--muted);
+    padding: 6px 13px; border-radius: 20px; font-size: 12.5px; cursor: pointer; transition: all .2s;
+  }
+  .btn-ghost:hover { color: var(--danger); border-color: var(--danger); }
+  #theme {
+    background: none; border: 1px solid var(--btn-border); color: var(--muted);
+    width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 15px;
+    display: grid; place-items: center; transition: all .2s; line-height: 1;
+  }
+  #theme:hover { border-color: var(--accent); transform: rotate(15deg); }
+
+  /* ---------- bubble field ---------- */
+  #field {
+    flex: 1 1 auto; position: relative; overflow: hidden;
+    margin: 8px 0;   /* breathing room top & bottom around the bubbles */
+  }
+  #empty {
+    position: absolute; inset: 0; display: grid; place-items: center;
+    color: var(--muted); text-align: center; font-size: 15px; line-height: 1.7;
+    pointer-events: none; transition: opacity .4s; padding: 0 30px;
+  }
+  #empty .big { font-size: 40px; display: block; margin-bottom: 8px; opacity: .8; }
+  #empty.hidden { opacity: 0; }
+
+  .bubble {
+    position: absolute; left: 0; top: 0;
+    display: grid; place-items: center; text-align: center;
+    border-radius: 50%; cursor: pointer; user-select: none;
+    padding: 16px;
+    color: var(--text); font-size: 12.5px; line-height: 1.45;
+    word-break: break-word; overflow: hidden;
+    background-color: var(--bubble-color);
+    background-image: var(--bubble-img);
+    border: 1px solid var(--bubble-border);
+    box-shadow: var(--bubble-shadow);
+    backdrop-filter: blur(3px);
+    transition: box-shadow .3s, border-color .3s;
+    will-change: transform;
+  }
+  .bubble:hover {
+    border-color: var(--bubble-hover-border);
+    box-shadow: var(--bubble-hover-shadow);
+  }
+  .bubble.latest {
+    border-color: var(--latest-border);
+    box-shadow: var(--latest-shadow);
+  }
+  .bubble .txt { max-height: 100%; overflow: hidden; pointer-events: none; }
+  .bubble .who {
+    position: absolute; bottom: 12%; left: 0; right: 0;
+    font-size: 9.5px; color: var(--muted); opacity: 0; transition: opacity .25s; pointer-events: none;
+  }
+  .bubble:hover .who { opacity: 1; }
+
+  .falling-txt {
+    position: absolute; pointer-events: none; z-index: 24;
+    color: var(--text); font-size: 12.5px; line-height: 1.45; text-align: center;
+    word-break: break-word; max-width: 220px;
+  }
+  .particle { position: absolute; border-radius: 50%; pointer-events: none; z-index: 20; }
+
+  /* ---------- dock ---------- */
+  #dock {
+    flex: 0 0 auto; padding: 10px 18px 18px; z-index: 5;
+    display: flex; justify-content: center;
+  }
+  .dock-inner {
+    width: 100%; max-width: 700px; position: relative;
+    background: var(--dock-bg);
+    border: 1px solid var(--dock-border); border-radius: 18px;
+    padding: 12px 14px; backdrop-filter: blur(10px);
+    box-shadow: 0 -6px 30px rgba(0,0,0,.12);
+    transition: border-color .25s, box-shadow .25s;
+  }
+  .dock-inner:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(79,140,255,.15), 0 -6px 30px rgba(0,0,0,.12);
+  }
+  #input {
+    width: 100%; background: none; border: none; outline: none; resize: none;
+    color: var(--text); font: inherit; font-size: 14.5px; line-height: 1.5;
+    max-height: 120px; min-height: 24px; caret-color: var(--accent);
+  }
+  #input::placeholder { color: var(--hint); }
+  .dock-row { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; }
+  .hint { font-size: 11.5px; color: var(--hint); }
+  .hint kbd {
+    background: var(--kbd-bg); border: 1px solid var(--kbd-border); border-radius: 4px;
+    padding: 1px 5px; font-size: 10px; font-family: inherit;
+  }
+  #send {
+    background: linear-gradient(135deg, var(--accent), #7a5cff);
+    color: #fff; border: none; border-radius: 12px; padding: 8px 22px;
+    font-size: 13.5px; font-weight: 600; cursor: pointer;
+    transition: transform .15s, box-shadow .2s; box-shadow: 0 4px 16px rgba(79,140,255,.35);
+  }
+  #send:hover { transform: translateY(-1px); box-shadow: 0 6px 22px rgba(79,140,255,.5); }
+  #send:active { transform: scale(.96); }
+
+  /* ---------- unlock screen ---------- */
+  #lock {
+    position: fixed; inset: 0; z-index: 100;
+    display: none; place-items: center;
+    background: rgba(8, 10, 18, .55); backdrop-filter: blur(8px);
+  }
+  #lock.show { display: grid; }
+  .lock-card {
+    background: var(--dock-bg); border: 1px solid var(--dock-border);
+    border-radius: 22px; padding: 34px 38px; text-align: center;
+    max-width: 360px; width: calc(100% - 40px);
+    box-shadow: 0 24px 70px rgba(0,0,0,.4);
+  }
+  .lock-card .logo { margin: 0 auto 14px; width: 46px; height: 46px; }
+  .lock-card h2 { font-size: 19px; margin-bottom: 6px; }
+  .lock-card p { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 18px; }
+  #code {
+    width: 100%; text-align: center; font-size: 17px; letter-spacing: 3px;
+    text-transform: uppercase; font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+    background: var(--kbd-bg); color: var(--text);
+    border: 1px solid var(--kbd-border); border-radius: 12px;
+    padding: 11px 12px; outline: none; transition: border-color .2s;
+  }
+  #code:focus { border-color: var(--accent); }
+  #unlock {
+    margin-top: 14px; width: 100%;
+    background: linear-gradient(135deg, var(--accent), #7a5cff);
+    color: #fff; border: none; border-radius: 12px; padding: 11px;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    box-shadow: 0 4px 16px rgba(79,140,255,.35); transition: transform .15s;
+  }
+  #unlock:active { transform: scale(.97); }
+  #lock-err { color: var(--danger); font-size: 12.5px; margin-top: 12px; min-height: 16px; }
+
+  /* toast */
+  #toast {
+    position: fixed; left: 50%; bottom: 110px; transform: translateX(-50%) translateY(20px);
+    background: var(--toast-bg); border: 1px solid var(--toast-border); color: var(--text);
+    padding: 9px 18px; border-radius: 24px; font-size: 13px;
+    opacity: 0; pointer-events: none; transition: all .3s cubic-bezier(.2,1.2,.4,1); z-index: 50;
+    box-shadow: 0 8px 30px rgba(0,0,0,.18);
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  #toast .ok { color: var(--accent-2); }
+
+  @media (max-width: 600px) {
+    header { padding: 12px 14px; }
+    .meta .devices-label { display: none; }
+    .bubble { font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand"><div class="logo"></div> BubbleClip</div>
+  <div class="meta">
+    <span><span class="dot" id="dot"></span><span id="status">connecting…</span></span>
+    <span id="devices">— <span class="devices-label">devices</span></span>
+    <button class="btn-ghost" id="clear">Clear all</button>
+    <button id="theme" title="Toggle theme">☀️</button>
+  </div>
+</header>
+
+<div id="field">
+  <div id="empty">
+    <div><span class="big">🫧</span>
+    Paste anywhere (<b>Ctrl+V</b>) or type below —<br>your text wraps into a bubble every device can see.<br>
+    <span style="font-size:13px">Click a bubble to burst it &amp; copy.</span></div>
+  </div>
+</div>
+
+<div id="dock">
+  <div class="dock-inner">
+    <textarea id="input" rows="1" autofocus placeholder="Type or paste text to beam it across your network…"></textarea>
+    <div class="dock-row">
+      <span class="hint"><kbd>Enter</kbd> send &nbsp;·&nbsp; <kbd>Shift+Enter</kbd> newline &nbsp;·&nbsp; <kbd>Ctrl+V</kbd> anywhere beams instantly</span>
+      <button id="send">Send ⬆</button>
+    </div>
+  </div>
+</div>
+
+<div id="lock">
+  <div class="lock-card">
+    <div class="logo"></div>
+    <h2>BubbleClip is locked</h2>
+    <p>Enter the access code from the server logs.<br>You only need to do this once per device.</p>
+    <input id="code" maxlength="32" placeholder="XXXX-XXXX" autocomplete="off" spellcheck="false" />
+    <button id="unlock">Unlock</button>
+    <div id="lock-err"></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+(() => {
+  const MAX_BUBBLES = 10;
+  const field = document.getElementById('field');
+  const empty = document.getElementById('empty');
+  const input = document.getElementById('input');
+  const sendBtn = document.getElementById('send');
+  const dot = document.getElementById('dot');
+  const statusEl = document.getElementById('status');
+  const devicesEl = document.getElementById('devices');
+  const toast = document.getElementById('toast');
+  const themeBtn = document.getElementById('theme');
+  const lock = document.getElementById('lock');
+  const codeInput = document.getElementById('code');
+  const unlockBtn = document.getElementById('unlock');
+  const lockErr = document.getElementById('lock-err');
+
+  // ---------- theme ----------
+  function setTheme(t, save) {
+    document.documentElement.dataset.theme = t;
+    themeBtn.textContent = t === 'light' ? '🌙' : '☀️';
+    if (save) localStorage.setItem('bubbleclip-theme', t);
+  }
+  setTheme(localStorage.getItem('bubbleclip-theme') ||
+    (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'), false);
+  themeBtn.addEventListener('click', () => {
+    const next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+    setTheme(next, true);
+    gsap.fromTo('body', { opacity: .75 }, { opacity: 1, duration: .45, ease: 'power2.out' });
+  });
+
+  // ---------- autofocus: cursor ready the moment the page opens ----------
+  function focusInput() {
+    if (lock.classList.contains('show')) codeInput.focus();
+    else input.focus({ preventScroll: true });
+  }
+  focusInput();
+  window.addEventListener('load', focusInput);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) focusInput(); });
+
+  // ---------- device name ----------
+  const ADJ = ['swift','cosmic','neon','quiet','bold','lucky','misty','solar','pixel','velvet'];
+  const ANI = ['fox','owl','panda','otter','lynx','wolf','koala','raven','tiger','seal'];
+  let device = localStorage.getItem('bubbleclip-device');
+  if (!device) {
+    device = ADJ[Math.random()*ADJ.length|0] + '-' + ANI[Math.random()*ANI.length|0];
+    localStorage.setItem('bubbleclip-device', device);
+  }
+
+  // ---------- access code ----------
+  function getCode() { return localStorage.getItem('bubbleclip-code') || ''; }
+
+  function showLock(message) {
+    lock.classList.add('show');
+    lockErr.textContent = message || '';
+    gsap.fromTo('.lock-card', { scale: .85, opacity: 0 }, { scale: 1, opacity: 1, duration: .45, ease: 'back.out(1.6)' });
+    codeInput.focus();
+  }
+  function hideLock() {
+    gsap.to('.lock-card', { scale: .9, opacity: 0, duration: .25, ease: 'power2.in',
+      onComplete: () => lock.classList.remove('show') });
+  }
+  function tryUnlock() {
+    const code = codeInput.value.trim().toUpperCase();
+    if (!code) return;
+    localStorage.setItem('bubbleclip-code', code);
+    lockErr.textContent = '';
+    connect();
+  }
+  unlockBtn.addEventListener('click', tryUnlock);
+  codeInput.addEventListener('keydown', e => { if (e.key === 'Enter') tryUnlock(); });
+
+  // ---------- websocket ----------
+  let ws, reconnectDelay = 500;
+  let currentId = null;
+  let pendingLocal = null;   // text we just sent → wrap-from-dock animation
+  let firstSync = true;
+
+  function connect() {
+    const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+    ws = new WebSocket(`${proto}://${location.host}/ws?code=${encodeURIComponent(getCode())}`);
+    ws.onopen = () => {
+      dot.classList.add('on'); statusEl.textContent = 'live';
+      reconnectDelay = 500;
+      if (lock.classList.contains('show')) { hideLock(); setTimeout(focusInput, 300); }
+      ws.send(JSON.stringify({ type: 'hello', device }));
+    };
+    ws.onclose = e => {
+      dot.classList.remove('on');
+      if (e.code === 4001) {
+        statusEl.textContent = 'locked';
+        const hadCode = !!getCode();
+        showLock(hadCode ? 'Wrong code — check the server logs and try again.' : '');
+        if (hadCode) gsap.fromTo('.lock-card', { x: -8 }, { x: 0, duration: .4, ease: 'elastic.out(1.2, .25)' });
+        return; // wait for the user, don't hammer the server
+      }
+      if (e.code === 4029) {
+        statusEl.textContent = 'locked';
+        showLock('Too many attempts from this device — wait ~15 minutes.');
+        return;
+      }
+      statusEl.textContent = 'reconnecting…';
+      setTimeout(connect, reconnectDelay = Math.min(reconnectDelay * 2, 8000));
+    };
+    ws.onmessage = e => {
+      let msg; try { msg = JSON.parse(e.data); } catch { return; }
+      if (msg.type === 'presence') {
+        devicesEl.innerHTML = msg.count + ' <span class="devices-label">device' + (msg.count === 1 ? '' : 's') + '</span>';
+      } else if (msg.type === 'clipboard') {
+        currentId = msg.current && msg.current.id;
+        syncBubbles(msg.history || []);
+        firstSync = false;
+      }
+    };
+  }
+  connect();
+
+  // ---------- bubbles ----------
+  const bubbles = new Map(); // id -> {el, entry, float}
+
+  function hashJitter(id, salt) {
+    let h = salt;
+    for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+    return (h % 1000) / 1000; // stable 0..1
+  }
+
+  function bubbleSize(text) {
+    return Math.max(92, Math.min(165, 80 + text.length * 1.4));
+  }
+
+  // compute slot positions for all live bubbles
+  function computeLayout() {
+    const items = [...bubbles.values()].filter(b => !b.bursting);
+    const n = items.length;
+    const out = new Map();
+    if (!n) return out;
+    const W = field.clientWidth, H = field.clientHeight;
+    const padX = Math.min(70, W * .08), padTop = 30, padBot = 40;
+    const cols = Math.max(1, Math.min(n, Math.round(Math.sqrt(n * (W / Math.max(H, 1))))));
+    const rows = Math.ceil(n / cols);
+    items.forEach((b, i) => {
+      const r = Math.floor(i / cols), c = i % cols;
+      const inRow = (r === rows - 1) ? (n - r * cols) : cols;
+      const cellW = (W - padX * 2) / inRow;
+      const cellH = (H - padTop - padBot) / rows;
+      const jx = (hashJitter(b.entry.id, 7) - .5) * cellW * .35;
+      const jy = (hashJitter(b.entry.id, 13) - .5) * cellH * .3;
+      const size = b.size;
+      const x = Math.max(4, Math.min(W - size - 4, padX + cellW * (c + .5) + jx - size / 2));
+      const y = Math.max(4, Math.min(H - size - 4, padTop + cellH * (r + .5) + jy - size / 2));
+      out.set(b.entry.id, { x, y });
+    });
+    return out;
+  }
+
+  function applyLayout(exceptId) {
+    const slots = computeLayout();
+    for (const [id, b] of bubbles) {
+      const s = slots.get(id);
+      if (!s || id === exceptId || b.bursting) continue;
+      gsap.to(b.el, { left: s.x, top: s.y, duration: .8, ease: 'power3.inOut' });
+    }
+    return slots;
+  }
+
+  // gentle endless drift
+  function startFloat(b) {
+    b.float = gsap.to(b.el, {
+      x: 'random(-14, 14)', y: 'random(-18, 10)', rotation: 'random(-2.5, 2.5)',
+      duration: 'random(3, 5.5)', ease: 'sine.inOut',
+      repeat: -1, yoyo: true, repeatRefresh: true,
+    });
+  }
+
+  function makeBubble(entry, origin, stagger) {
+    const el = document.createElement('div');
+    el.className = 'bubble';
+    const size = bubbleSize(entry.text);
+
+    const txt = document.createElement('div');
+    txt.className = 'txt';
+    const t = entry.text.trim();
+    txt.textContent = t.length > 60 ? t.slice(0, 57) + '…' : t;
+    el.appendChild(txt);
+
+    const who = document.createElement('div');
+    who.className = 'who';
+    who.textContent = entry.device + ' · ' + timeAgo(entry.ts);
+    el.appendChild(who);
+    el.title = t.length > 60 ? t.slice(0, 400) : '';
+
+    el.addEventListener('click', () => burst(entry.id));
+    field.appendChild(el);
+    const b = { el, entry, size, float: null, bursting: false };
+    bubbles.set(entry.id, b);
+
+    const slots = applyLayout(entry.id);
+    const slot = slots.get(entry.id) || { x: field.clientWidth / 2 - size / 2, y: field.clientHeight / 3 };
+    const fh = field.clientHeight;
+
+    if (origin === 'dock') {
+      // wrap: pill at the dock → rises & morphs into a sphere
+      const pillW = Math.min(320, field.clientWidth * .6);
+      gsap.set(el, { width: pillW, height: 44, borderRadius: 18,
+                     left: (field.clientWidth - pillW) / 2, top: fh - 56, opacity: 1 });
+      gsap.to(el, {
+        left: slot.x, top: slot.y, width: size, height: size, borderRadius: '50%',
+        duration: 1, ease: 'power3.out',
+        onComplete: () => startFloat(b),
+      });
+    } else {
+      // everything else rises from the bottom too — bottom → top, smooth pop
+      gsap.set(el, { width: size, height: size, left: slot.x, top: fh + 30, opacity: 0, scale: .5 });
+      gsap.to(el, {
+        top: slot.y, opacity: 1, scale: 1,
+        duration: .95, delay: stagger || 0,
+        ease: 'back.out(1.4)',
+        onComplete: () => startFloat(b),
+      });
+    }
+    return b;
+  }
+
+  function syncBubbles(history) {
+    const keep = history.slice(0, MAX_BUBBLES);
+    const keepIds = new Set(keep.map(h => h.id));
+    for (const [id, b] of bubbles) {
+      if (!keepIds.has(id)) {
+        if (b.float) b.float.kill();
+        gsap.to(b.el, { scale: 0, opacity: 0, duration: .35, ease: 'back.in(1.5)',
+                        onComplete: () => b.el.remove() });
+        bubbles.delete(id);
+      }
+    }
+    let added = false, staggerIdx = 0;
+    for (const entry of keep) {
+      if (!bubbles.has(entry.id)) {
+        let origin = 'rise', delay = 0;
+        if (pendingLocal !== null && entry.text === pendingLocal) {
+          origin = 'dock'; pendingLocal = null;
+        } else if (!firstSync && entry.ts && Date.now() - entry.ts < 5000) {
+          showToast('🫧 from <b>' + escapeHtml(entry.device) + '</b>');
+        } else if (firstSync) {
+          delay = staggerIdx++ * 0.09; // initial load: bubbles rise one after another
+        }
+        makeBubble(entry, origin, delay);
+        added = true;
+      }
+    }
+    for (const [id, b] of bubbles) b.el.classList.toggle('latest', id === currentId);
+    if (!added) applyLayout(null);
+    empty.classList.toggle('hidden', bubbles.size > 0);
+  }
+
+  // ---------- burst: pop, text falls & fades, then respawn ----------
+  async function burst(id) {
+    const b = bubbles.get(id);
+    if (!b || b.bursting) return;
+    b.bursting = true;
+    if (b.float) b.float.kill();
+
+    const rect = b.el.getBoundingClientRect();
+    const fRect = field.getBoundingClientRect();
+    const cx = rect.left - fRect.left + rect.width / 2;
+    const cy = rect.top - fRect.top + rect.height / 2;
+
+    // the text falls out of the bubble and fades away
+    const fall = document.createElement('div');
+    fall.className = 'falling-txt';
+    fall.textContent = b.el.querySelector('.txt').textContent;
+    field.appendChild(fall);
+    gsap.set(fall, { left: cx, top: cy, xPercent: -50, yPercent: -50, opacity: 1 });
+    gsap.to(fall, {
+      y: 150, opacity: 0, rotation: 'random(-9, 9)', scale: .92,
+      duration: 1, ease: 'power2.in',
+      onComplete: () => fall.remove(),
+    });
+
+    // bubble film pops
+    gsap.to(b.el, {
+      scale: 1.45, opacity: 0, filter: 'blur(7px)',
+      duration: .42, ease: 'power2.out',
+      onComplete: () => b.el.remove(),
+    });
+    spawnParticles(cx, cy, rect.width);
+
+    const ok = await copyText(b.entry.text);
+    input.value = b.entry.text;              // receive into the text box
+    autoGrow(); focusInput();
+    showToast(ok ? '<span class="ok">✓</span> Copied to clipboard' : 'Copy failed — text placed in the box below');
+
+    // respawn gently — it still lives on the network
+    setTimeout(() => {
+      bubbles.delete(id);
+      const nb = makeBubble(b.entry, 'rise', 0);
+      if (id === currentId) nb.el.classList.add('latest');
+    }, 700);
+  }
+
+  function spawnParticles(cx, cy, size) {
+    const colors = ['#4f8cff', '#38d9a9', '#ff6bd6', '#a5b4fc', '#7dd3fc'];
+    for (let i = 0; i < 18; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      const d = 3 + Math.random() * 6;
+      p.style.width = p.style.height = d + 'px';
+      p.style.background = colors[Math.random() * colors.length | 0];
+      field.appendChild(p);
+      const ang = Math.random() * Math.PI * 2;
+      const dist = size * .4 + Math.random() * size * .9;
+      gsap.set(p, { left: cx, top: cy });
+      gsap.to(p, {
+        x: Math.cos(ang) * dist,
+        y: Math.sin(ang) * dist + 25,   // slight gravity
+        scale: .15, opacity: 0,
+        duration: .5 + Math.random() * .35,
+        ease: 'power2.out',
+        onComplete: () => p.remove(),
+      });
+    }
+  }
+
+  async function copyText(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        const ok = document.execCommand('copy');
+        ta.remove();
+        return ok;
+      } catch { return false; }
+    }
+  }
+
+  // ---------- sending ----------
+  function sendText(text) {
+    text = (text || '').trim();
+    if (!text) return;
+    if (!ws || ws.readyState !== WebSocket.OPEN) { showToast('Not connected yet…'); return; }
+    pendingLocal = text;
+    ws.send(JSON.stringify({ type: 'copy', text }));
+    input.value = '';
+    autoGrow(); focusInput();
+  }
+
+  sendBtn.addEventListener('click', () => sendText(input.value));
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendText(input.value); }
+  });
+  function autoGrow() {
+    input.style.height = 'auto';
+    input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+  }
+  input.addEventListener('input', autoGrow);
+
+  // paste anywhere (outside the textarea) → beam instantly
+  document.addEventListener('paste', e => {
+    if (e.target === input || e.target === codeInput) return; // normal paste while editing
+    const text = (e.clipboardData || window.clipboardData).getData('text');
+    if (text && text.trim()) { e.preventDefault(); sendText(text); }
+  });
+
+  // ---------- misc ----------
+  document.getElementById('clear').addEventListener('click', () => {
+    fetch('/api/history', { method: 'DELETE', headers: { 'X-Access-Code': getCode() } });
+    focusInput();
+  });
+
+  let toastTimer;
+  function showToast(html) {
+    toast.innerHTML = html;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  function timeAgo(ts) {
+    if (!ts) return '';
+    const s = (Date.now() - ts) / 1000;
+    if (s < 60) return 'now';
+    if (s < 3600) return Math.floor(s / 60) + 'm ago';
+    if (s < 86400) return Math.floor(s / 3600) + 'h ago';
+    return Math.floor(s / 86400) + 'd ago';
+  }
+
+  setInterval(() => {
+    for (const b of bubbles.values()) {
+      const who = b.el.querySelector('.who');
+      if (who) who.textContent = b.entry.device + ' · ' + timeAgo(b.entry.ts);
+    }
+  }, 30000);
+
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => applyLayout(null), 150);
+  });
+})();
+</script>
+</body>
+</html>

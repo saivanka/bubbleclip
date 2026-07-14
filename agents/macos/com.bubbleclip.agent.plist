@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.bubbleclip.agent</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>/usr/local/bin/bubbleclip-agent.sh</string>
+  </array>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>BUBBLECLIP_SERVER</key>
+    <string>http://192.168.1.50:8080</string>
+    <key>BUBBLECLIP_CODE</key>
+    <string>PUT-YOUR-CODE-HERE</string>
+  </dict>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+  <key>StandardOutPath</key>
+  <string>/tmp/bubbleclip-agent.log</string>
+  <key>StandardErrorPath</key>
+  <string>/tmp/bubbleclip-agent.log</string>
+</dict>
+</plist>

@@ -1,0 +1,51 @@
+# BubbleClip as its own Tailscale node — zero exposed ports, HTTPS included.
+#
+# The container joins your tailnet as machine "bubbleclip" and serves
+#   https://bubbleclip.<your-tailnet>.ts.net
+# Valid TLS cert → browser clipboard permissions work on every device
+# (iPhone included). Nothing is published on the LAN.
+#
+# Usage:
+#   1. Get an auth key: https://login.tailscale.com/admin/settings/keys
+#      (Reusable, tag or not — defaults are fine)
+#   2. TS_AUTHKEY=tskey-auth-xxxxx docker compose -f docker-compose.tailscale.yml up -d --build
+#
+# Requires: MagicDNS + HTTPS certificates enabled in the Tailscale admin
+# console (DNS page → "Enable HTTPS").
+
+services:
+  tailscale:
+    image: tailscale/tailscale:latest
+    container_name: bubbleclip-ts
+    hostname: bubbleclip
+    environment:
+      - TS_AUTHKEY=${TS_AUTHKEY}
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_SERVE_CONFIG=/config/serve.json
+    volumes:
+      - ts-state:/var/lib/tailscale
+      - ./tailscale/serve.json:/config/serve.json:ro
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    cap_add:
+      - net_admin
+      - sys_module
+    restart: unless-stopped
+
+  bubbleclip:
+    build: .
+    container_name: bubbleclip
+    network_mode: service:tailscale
+    depends_on:
+      - tailscale
+    volumes:
+      - bubbleclip-data:/app/data
+    environment:
+      - PORT=8080
+      - MAX_HISTORY=50
+      # - ACCESS_CODE=${ACCESS_CODE}
+    restart: unless-stopped
+
+volumes:
+  ts-state:
+  bubbleclip-data:

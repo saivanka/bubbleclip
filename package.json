@@ -1,0 +1,34 @@
+{
+  "name": "bubbleclip",
+  "version": "1.0.0",
+  "description": "Self-hosted realtime clipboard for your network — text floats as bubbles, click to burst & copy",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/saivanka/bubbleclip.git"
+  },
+  "keywords": [
+    "clipboard",
+    "clipboard-sync",
+    "self-hosted",
+    "websocket",
+    "docker",
+    "lan",
+    "cross-device"
+  ],
+  "author": "Sai Pavan Vanka <satyapavanvanka1999@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/saivanka/bubbleclip/issues"
+  },
+  "homepage": "https://github.com/saivanka/bubbleclip#readme",
+  "dependencies": {
+    "ws": "^8.18.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
