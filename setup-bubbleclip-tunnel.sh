@@ -2,11 +2,11 @@
 set -Eeuo pipefail
 
 APP_NAME="bubbleclip"
-APP_URL="http://localhost:9600"
+APP_URL="http://localhost:5678"
 LOG_FILE="$HOME/${APP_NAME}-tunnel.log"
 PID_FILE="$HOME/${APP_NAME}-tunnel.pid"
 
-echo "Checking BubbleClip on port 9600..."
+echo "Checking BubbleClip on port 5678..."
 
 if ! curl -fsS --max-time 5 "$APP_URL" >/dev/null; then
     echo "Warning: Nothing responded at $APP_URL"
