@@ -15,7 +15,7 @@ docker compose up -d --build
 docker logs bubbleclip   # ← grab your access code from here
 ```
 
-Open `http://<host-ip>:8080` on any device, enter the code once, and start pasting. That's the whole setup.
+Open `http://<host-ip>:5678` on any device, enter the code once, and start pasting. That's the whole setup.
 
 No Docker? `npm install && npm start` works too (Node 18+).
 
@@ -33,8 +33,12 @@ Everything is pushed over WebSocket, so bubbles appear on all connected screens 
 
 Every BubbleClip instance is locked with an access code:
 
-- If you don't set one, a random code is **generated on first run**, saved in the data volume, and printed in the container logs. Devices enter it once; it's remembered per browser.
-- Prefer your own? Set `ACCESS_CODE=whatever-you-like`.
+- On a fresh install, the **first device to open the web UI gets a one-click "Generate access code" screen** — no digging through logs. The code appears once, with Copy and Share-via-email buttons, and that device is connected. The moment anyone authenticates, this setup window closes for good and every later visitor sees only the locked screen.
+- (The code is also printed in the container logs, and saved in the data volume, if you prefer the terminal route.)
+- The **🔑 Code** button in the header shows the current code on any connected device — copy it, or hit **Share via email** to send a ready-made invite (code + link + join steps) to whoever you want in. Paste the code into the unlock screen on the new device, and it's connected. No need to dig through logs after the first setup.
+- The same dialog has a **Reset code** button: one click generates a fresh code, keeps the device that reset it connected, and kicks everything else off until the new code is entered. Handy if you shared the code with someone you no longer want in.
+- **Everyone locked out?** (code reset and then lost, browsers cleared, the phone with the code died…) The lock screen has a "Generate a fresh code" recovery link. It wipes the clipboard contents and signs out every device, then hands the new code to whoever clicked it — so you can always get back in, but nobody can ever use recovery to *read* an existing clipboard. Rate-limited to one per IP per 5 minutes.
+- Prefer your own? Set `ACCESS_CODE=whatever-you-like` (this pins it — reset and recovery from the UI are disabled).
 - Fully trusted network and don't want auth? `ACCESS_CODE=disabled`.
 
 Under the hood: constant-time code comparison, a 15-minute IP lockout after 10 failed attempts, per-connection WebSocket rate limiting, size limits on every input, security headers + CSP on every response, and the container runs as a non-root user. The clipboard content itself never leaves your network — there is no cloud component, no telemetry, nothing phoning home.
@@ -56,16 +60,20 @@ Everything the UI does goes through a small HTTP/WebSocket API, so scripting is 
 
 ```bash
 # push text
-curl -H "X-Access-Code: XXXX-XXXX" -d "hello world" http://host:8080/api/clipboard
+curl -H "X-Access-Code: XXXX-XXXX" -d "hello world" http://host:5678/api/clipboard
 
 # read the current clipboard as raw text
-curl -H "X-Access-Code: XXXX-XXXX" "http://host:8080/api/clipboard?plain=1"
+curl -H "X-Access-Code: XXXX-XXXX" "http://host:5678/api/clipboard?plain=1"
 
 # full state (current + history + connected device count)
-curl -H "X-Access-Code: XXXX-XXXX" http://host:8080/api/clipboard
+curl -H "X-Access-Code: XXXX-XXXX" http://host:5678/api/clipboard
 
 # clear history
-curl -H "X-Access-Code: XXXX-XXXX" -X DELETE http://host:8080/api/history
+curl -H "X-Access-Code: XXXX-XXXX" -X DELETE http://host:5678/api/history
+
+# view the current access code / rotate it
+curl -H "X-Access-Code: XXXX-XXXX" http://host:5678/api/code
+curl -H "X-Access-Code: XXXX-XXXX" -X POST http://host:5678/api/code/reset
 ```
 
 `/api/health` is unauthenticated so Docker healthchecks and uptime monitors work.
@@ -74,7 +82,7 @@ curl -H "X-Access-Code: XXXX-XXXX" -X DELETE http://host:8080/api/history
 
 | Variable | Default | What it does |
 |---|---|---|
-| `PORT` | `8080` | HTTP + WebSocket port |
+| `PORT` | `5678` | HTTP + WebSocket port |
 | `ACCESS_CODE` | *(auto-generated)* | Access code; `disabled` turns auth off |
 | `MAX_HISTORY` | `50` | History entries kept |
 | `MAX_TEXT_BYTES` | `1048576` | Max clipboard size (1 MB) |
@@ -96,9 +104,11 @@ Then open `https://bubbleclip.<your-tailnet>.ts.net`. Needs MagicDNS + HTTPS cer
 - History and the access code live in the Docker volume, so they survive restarts. `docker volume rm bubbleclip_bubbleclip-data` gives you a factory reset (and a new code).
 - Text only, by design. Images and files are a different problem and I'd rather do one thing well.
 
-## Contributing
+## Contributing & support
 
 Bug reports, ideas, and PRs are all welcome — see [CONTRIBUTING.md](CONTRIBUTING.md). If you find a security problem, please go through [SECURITY.md](SECURITY.md) instead of a public issue.
+
+Stuck with setup? Email **bubbleclipservice@gmail.com** (also linked from the app's unlock screen) and include your clipboard URL and what you tried.
 
 ## License
 

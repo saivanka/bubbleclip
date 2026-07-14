@@ -104,6 +104,7 @@
     padding: 6px 13px; border-radius: 20px; font-size: 12.5px; cursor: pointer; transition: all .2s;
   }
   .btn-ghost:hover { color: var(--danger); border-color: var(--danger); }
+  #codebtn:hover { color: var(--accent); border-color: var(--accent); }
   #theme {
     background: none; border: 1px solid var(--btn-border); color: var(--muted);
     width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 15px;
@@ -199,7 +200,7 @@
   #send:hover { transform: translateY(-1px); box-shadow: 0 6px 22px rgba(79,140,255,.5); }
   #send:active { transform: scale(.96); }
 
-  /* ---------- unlock screen ---------- */
+  /* ---------- unlock / first-run screen ---------- */
   #lock {
     position: fixed; inset: 0; z-index: 100;
     display: none; place-items: center;
@@ -209,7 +210,7 @@
   .lock-card {
     background: var(--dock-bg); border: 1px solid var(--dock-border);
     border-radius: 22px; padding: 34px 38px; text-align: center;
-    max-width: 360px; width: calc(100% - 40px);
+    max-width: 380px; width: calc(100% - 40px);
     box-shadow: 0 24px 70px rgba(0,0,0,.4);
   }
   .lock-card .logo { margin: 0 auto 14px; width: 46px; height: 46px; }
@@ -223,22 +224,86 @@
     padding: 11px 12px; outline: none; transition: border-color .2s;
   }
   #code:focus { border-color: var(--accent); }
-  #unlock {
+  #unlock, #gencode, #enternow {
     margin-top: 14px; width: 100%;
     background: linear-gradient(135deg, var(--accent), #7a5cff);
     color: #fff; border: none; border-radius: 12px; padding: 11px;
     font-size: 14px; font-weight: 600; cursor: pointer;
     box-shadow: 0 4px 16px rgba(79,140,255,.35); transition: transform .15s;
   }
-  #unlock:active { transform: scale(.97); }
-  #lock-err { color: var(--danger); font-size: 12.5px; margin-top: 12px; min-height: 16px; }
+  #unlock:active, #gencode:active, #enternow:active { transform: scale(.97); }
+  #gencode { margin-top: 4px; }
+  #lock-err, #setup-err { color: var(--danger); font-size: 12.5px; margin-top: 12px; min-height: 16px; }
+  .lock-help {
+    margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--dock-border);
+    font-size: 12px; color: var(--hint); line-height: 1.6;
+  }
+  .lock-help a { color: var(--accent); text-decoration: none; }
+  .lock-help a:hover { text-decoration: underline; }
+  #recover {
+    display: block; width: 100%; margin-top: 12px;
+    background: linear-gradient(135deg, var(--accent-2), #1fa87a);
+    color: #fff; border: none; border-radius: 12px; padding: 10px;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    box-shadow: 0 4px 14px rgba(56,217,169,.3);
+    transition: transform .15s, box-shadow .2s;
+  }
+  #recover:hover { box-shadow: 0 6px 20px rgba(56,217,169,.45); transform: translateY(-1px); }
+  #recover:active { transform: scale(.97); }
+  #recover.armed {
+    background: linear-gradient(135deg, var(--danger), #c9302c);
+    box-shadow: 0 4px 14px rgba(229,72,77,.35);
+  }
+
+  /* ---------- code share / reset modal ---------- */
+  #codemodal {
+    position: fixed; inset: 0; z-index: 100;
+    display: none; place-items: center;
+    background: rgba(8, 10, 18, .55); backdrop-filter: blur(8px);
+  }
+  #codemodal.show { display: grid; }
+  .code-row { display: flex; gap: 10px; margin: 16px 0 4px; }
+  .code-field {
+    flex: 1; position: relative; display: flex; align-items: center; justify-content: center;
+    font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+    font-size: 19px; letter-spacing: 3px; user-select: all; cursor: pointer;
+    background: var(--kbd-bg); border: 1px dashed var(--kbd-border); border-radius: 12px;
+    padding: 13px 42px 13px 16px; min-height: 52px; transition: border-color .2s;
+  }
+  .code-field:hover { border-color: var(--accent); }
+  .icon-btn {
+    position: absolute; right: 7px; top: 50%; transform: translateY(-50%);
+    width: 30px; height: 30px; border: none; border-radius: 8px;
+    background: none; color: var(--muted); cursor: pointer;
+    display: grid; place-items: center; transition: all .2s;
+  }
+  .icon-btn:hover { color: var(--accent); background: rgba(79,140,255,.12); }
+  .icon-box {
+    flex: 0 0 52px; border: 1px dashed var(--kbd-border); border-radius: 12px;
+    background: var(--kbd-bg); color: var(--muted); cursor: pointer;
+    display: grid; place-items: center; transition: all .2s;
+  }
+  .icon-box:hover { color: var(--accent); border-color: var(--accent); }
+  #resetcode {
+    width: 100%; margin-top: 10px;
+    background: none; border: 1px solid var(--btn-border); color: var(--muted);
+    border-radius: 12px; padding: 10px; font-size: 13px; cursor: pointer;
+    transition: all .2s;
+  }
+  #resetcode:hover, #resetcode.confirm { color: var(--danger); border-color: var(--danger); }
+  #code-note { font-size: 11.5px; color: var(--hint); margin-top: 12px; line-height: 1.5; min-height: 16px; }
+  .modal-link {
+    display: inline-block; margin-top: 12px; font-size: 12px;
+    color: var(--hint); text-decoration: none; cursor: pointer;
+  }
+  .modal-link:hover { color: var(--accent); text-decoration: underline; }
 
   /* toast */
   #toast {
     position: fixed; left: 50%; bottom: 110px; transform: translateX(-50%) translateY(20px);
     background: var(--toast-bg); border: 1px solid var(--toast-border); color: var(--text);
     padding: 9px 18px; border-radius: 24px; font-size: 13px;
-    opacity: 0; pointer-events: none; transition: all .3s cubic-bezier(.2,1.2,.4,1); z-index: 50;
+    opacity: 0; pointer-events: none; transition: all .3s cubic-bezier(.2,1.2,.4,1); z-index: 150;
     box-shadow: 0 8px 30px rgba(0,0,0,.18);
   }
   #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -258,6 +323,7 @@
   <div class="meta">
     <span><span class="dot" id="dot"></span><span id="status">connecting…</span></span>
     <span id="devices">— <span class="devices-label">devices</span></span>
+    <button class="btn-ghost" id="codebtn" title="Share or reset the access code">🔑 Code</button>
     <button class="btn-ghost" id="clear">Clear all</button>
     <button id="theme" title="Toggle theme">☀️</button>
   </div>
@@ -284,11 +350,56 @@
 <div id="lock">
   <div class="lock-card">
     <div class="logo"></div>
-    <h2>BubbleClip is locked</h2>
-    <p>Enter the access code from the server logs.<br>You only need to do this once per device.</p>
-    <input id="code" maxlength="32" placeholder="XXXX-XXXX" autocomplete="off" spellcheck="false" />
-    <button id="unlock">Unlock</button>
-    <div id="lock-err"></div>
+
+    <!-- normal unlock: this clipboard already has an owner -->
+    <div id="enter-view">
+      <h2>BubbleClip is locked</h2>
+      <p>Enter the access code for this clipboard.<br>You only need to do this once per device.</p>
+      <input id="code" maxlength="32" placeholder="XXXX-XXXX" autocomplete="off" spellcheck="false" />
+      <button id="unlock">Unlock</button>
+      <div id="lock-err"></div>
+      <div class="lock-help">
+        Don't have the code? Anyone already connected can send it to you
+        from the <b>🔑 Code</b> menu (or it's in the server logs).<br>
+        Stuck? <a id="helpmail" href="#">✉️ Email BubbleClip support</a>
+        <button id="recover">Generate a fresh code</button>
+      </div>
+    </div>
+
+    <!-- first run: nobody has claimed this clipboard yet -->
+    <div id="setup-view" style="display:none">
+      <h2>Welcome to BubbleClip 🫧</h2>
+      <p>This clipboard is brand new. Generate its access code —<br>you'll share it with your other devices.</p>
+      <button id="gencode">Generate access code</button>
+      <div class="code-row" id="setup-actions" style="display:none">
+        <div id="newcode" class="code-field" title="Click to copy">
+          <span id="newcode-text"></span>
+          <button id="copynew" class="icon-btn" title="Copy code"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
+        </div>
+        <button id="mailnew" class="icon-box" title="Share via email"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg></button>
+      </div>
+      <button id="enternow" style="display:none">Start using BubbleClip →</button>
+      <div id="setup-err"></div>
+      <a id="havecode" class="modal-link">Already have a code? Enter it</a>
+    </div>
+  </div>
+</div>
+
+<div id="codemodal">
+  <div class="lock-card">
+    <div class="logo"></div>
+    <h2>Access code</h2>
+    <p>This code links your devices to this clipboard.<br>Each device enters it once and stays connected.</p>
+    <div class="code-row">
+      <div id="code-display" class="code-field" title="Click to copy">
+        <span id="code-text">····-····</span>
+        <button id="copycode" class="icon-btn" title="Copy code"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
+      </div>
+      <button id="mailcode" class="icon-box" title="Share via email"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg></button>
+    </div>
+    <button id="resetcode">Reset code</button>
+    <div id="code-note"></div>
+    <a id="switchcode" class="modal-link">Use a different code…</a>
   </div>
 </div>
 
@@ -343,15 +454,39 @@
     localStorage.setItem('bubbleclip-device', device);
   }
 
-  // ---------- access code ----------
+  // ---------- access code: unlock & first-run views ----------
   function getCode() { return localStorage.getItem('bubbleclip-code') || ''; }
 
+  const enterView = document.getElementById('enter-view');
+  const setupView = document.getElementById('setup-view');
+
   function showLock(message) {
+    setupView.style.display = 'none';
+    enterView.style.display = '';
     lock.classList.add('show');
     lockErr.textContent = message || '';
     gsap.fromTo('.lock-card', { scale: .85, opacity: 0 }, { scale: 1, opacity: 1, duration: .45, ease: 'back.out(1.6)' });
     codeInput.focus();
   }
+
+  function showSetup() {
+    enterView.style.display = 'none';
+    setupView.style.display = '';
+    lock.classList.add('show');
+    gsap.fromTo('.lock-card', { scale: .85, opacity: 0 }, { scale: 1, opacity: 1, duration: .45, ease: 'back.out(1.6)' });
+  }
+
+  // decide which view a locked-out device should see
+  async function handleLocked(message) {
+    try {
+      const r = await fetch('/api/setup');
+      const s = await r.json();
+      if (s.unclaimed) { showSetup(); return; } // fresh clipboard: offer to generate the code here
+    } catch (_) { /* fall through to the normal unlock screen */ }
+    showLock(message);
+    if (message) gsap.fromTo('.lock-card', { x: -8 }, { x: 0, duration: .4, ease: 'elastic.out(1.2, .25)' });
+  }
+
   function hideLock() {
     gsap.to('.lock-card', { scale: .9, opacity: 0, duration: .25, ease: 'power2.in',
       onComplete: () => lock.classList.remove('show') });
@@ -365,6 +500,221 @@
   }
   unlockBtn.addEventListener('click', tryUnlock);
   codeInput.addEventListener('keydown', e => { if (e.key === 'Enter') tryUnlock(); });
+
+  // ---------- email helpers ----------
+  const SUPPORT_EMAIL = 'bubbleclipservice@gmail.com';
+
+  document.getElementById('helpmail').href =
+    'mailto:' + SUPPORT_EMAIL +
+    '?subject=' + encodeURIComponent('[BubbleClip] Help needed') +
+    '&body=' + encodeURIComponent(
+      'Hi BubbleClip team,\n\n' +
+      'I need help with:\n\n' +
+      '(describe your issue here)\n\n' +
+      '---\n' +
+      'Clipboard URL: ' + location.origin + '\n' +
+      'Device: ' + device + '\n' +
+      'Browser: ' + navigator.userAgent + '\n'
+    );
+
+  function shareCodeByEmail(code) {
+    const subject = '🫧 Your BubbleClip access code';
+    const body =
+      'Hi,\n\n' +
+      "You've been invited to a shared BubbleClip clipboard —\n" +
+      'copy on one device, paste on all of them, in real time.\n\n' +
+      '────────────────────────────\n' +
+      '   Access code:  ' + code + '\n' +
+      '   Clipboard:    ' + location.origin + '\n' +
+      '────────────────────────────\n\n' +
+      'How to join (takes 10 seconds):\n' +
+      '  1. Open the clipboard link on your device\n' +
+      '  2. Paste the access code on the unlock screen\n' +
+      '  3. Done — your bubbles are waiting 🫧\n\n' +
+      'Please keep the code private: anyone who has it can read\n' +
+      'and post to this shared clipboard.\n\n' +
+      '— Sent with BubbleClip, a self-hosted network clipboard\n' +
+      'Questions? ' + SUPPORT_EMAIL;
+    location.href = 'mailto:?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+  }
+
+  // ---------- code share / reset (authenticated devices) ----------
+  const codeModal = document.getElementById('codemodal');
+  const codeDisplay = document.getElementById('code-display');
+  const codeText = document.getElementById('code-text');
+  const codeBtn = document.getElementById('codebtn');
+  const copyCodeBtn = document.getElementById('copycode');
+  const mailCodeBtn = document.getElementById('mailcode');
+  const resetCodeBtn = document.getElementById('resetcode');
+  const codeNote = document.getElementById('code-note');
+  let shownCode = '';
+  let rotating = false; // suppress the lock screen while we rotate our own code
+
+  function armReset(reset) {
+    resetCodeBtn.classList.toggle('confirm', !reset);
+    resetCodeBtn.textContent = reset ? 'Reset code' : 'Really reset? Every device will need the new code';
+  }
+
+  async function openCodeModal() {
+    codeNote.textContent = ''; armReset(true);
+    try {
+      const r = await fetch('/api/code', { headers: { 'X-Access-Code': getCode() } });
+      const data = await r.json();
+      if (!r.ok) { showToast(escapeHtml(data.error || 'Not authorized')); return; }
+      if (data.disabled) {
+        shownCode = '';
+        codeText.textContent = 'auth disabled';
+        codeNote.textContent = 'This server runs with ACCESS_CODE=disabled — anyone on the network can connect.';
+        copyCodeBtn.style.display = 'none'; resetCodeBtn.style.display = 'none';
+        mailCodeBtn.style.display = 'none';
+      } else {
+        shownCode = data.code;
+        codeText.textContent = data.code;
+        copyCodeBtn.style.display = ''; resetCodeBtn.style.display = data.pinned ? 'none' : '';
+        mailCodeBtn.style.display = '';
+        if (data.pinned) codeNote.textContent = 'Code is pinned via the ACCESS_CODE env var — reset it there.';
+      }
+      codeModal.classList.add('show');
+      gsap.fromTo('#codemodal .lock-card', { scale: .85, opacity: 0 }, { scale: 1, opacity: 1, duration: .45, ease: 'back.out(1.6)' });
+    } catch { showToast('Server unreachable'); }
+  }
+
+  function closeCodeModal() {
+    gsap.to('#codemodal .lock-card', { scale: .9, opacity: 0, duration: .2, ease: 'power2.in',
+      onComplete: () => { codeModal.classList.remove('show'); focusInput(); } });
+  }
+
+  codeBtn.addEventListener('click', openCodeModal);
+  codeModal.addEventListener('click', e => { if (e.target === codeModal) closeCodeModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && codeModal.classList.contains('show')) closeCodeModal(); });
+
+  async function copyShownCode() {
+    if (!shownCode) return;
+    const ok = await copyText(shownCode);
+    showToast(ok ? '<span class="ok">✓</span> Code copied — paste it on the other device' : 'Copy failed — select the code manually');
+  }
+  copyCodeBtn.addEventListener('click', e => { e.stopPropagation(); copyShownCode(); });
+  codeDisplay.addEventListener('click', copyShownCode);
+  mailCodeBtn.addEventListener('click', () => {
+    if (shownCode) shareCodeByEmail(shownCode);
+  });
+
+  resetCodeBtn.addEventListener('click', async () => {
+    if (!resetCodeBtn.classList.contains('confirm')) { armReset(false); return; }
+    armReset(true);
+    try {
+      const r = await fetch('/api/code/reset', { method: 'POST', headers: { 'X-Access-Code': getCode() } });
+      const data = await r.json();
+      if (!r.ok) { codeNote.textContent = data.error || 'Reset failed'; return; }
+      rotating = true;                                    // our WS is about to be closed by the server
+      localStorage.setItem('bubbleclip-code', data.code); // this device keeps working seamlessly
+      shownCode = data.code;
+      codeText.textContent = data.code;
+      gsap.fromTo(codeDisplay, { scale: .8 }, { scale: 1, duration: .5, ease: 'back.out(2)' });
+      codeNote.textContent = 'New code active. Other devices are disconnected until they enter it.';
+      showToast('<span class="ok">✓</span> Access code reset');
+    } catch { codeNote.textContent = 'Server unreachable'; }
+  });
+
+  // ---------- first-run setup: generate & claim the code from the UI ----------
+  let setupCode = '';
+  const setupErr = document.getElementById('setup-err');
+
+  document.getElementById('gencode').addEventListener('click', async () => {
+    setupErr.textContent = '';
+    try {
+      const r = await fetch('/api/code/claim', { method: 'POST' });
+      const data = await r.json();
+      if (!r.ok) {
+        // someone else claimed it first — fall back to the normal unlock screen
+        showLock(r.status === 403 ? 'This clipboard was just claimed by another device — ask it for the code.' : (data.error || 'Setup failed'));
+        return;
+      }
+      setupCode = data.code;
+      localStorage.setItem('bubbleclip-code', data.code);
+      document.getElementById('gencode').style.display = 'none';
+      document.getElementById('newcode-text').textContent = data.code;
+      document.getElementById('setup-actions').style.display = '';
+      document.getElementById('enternow').style.display = '';
+      gsap.fromTo('#setup-actions', { scale: .85, opacity: 0 }, { scale: 1, opacity: 1, duration: .55, ease: 'back.out(1.8)' });
+    } catch { setupErr.textContent = 'Server unreachable — is BubbleClip running?'; }
+  });
+
+  async function copySetupCode() {
+    if (!setupCode) return;
+    const ok = await copyText(setupCode);
+    showToast(ok ? '<span class="ok">✓</span> Code copied' : 'Copy failed — select the code manually');
+  }
+  document.getElementById('copynew').addEventListener('click', e => { e.stopPropagation(); copySetupCode(); });
+  document.getElementById('newcode').addEventListener('click', copySetupCode);
+  document.getElementById('mailnew').addEventListener('click', () => {
+    if (setupCode) shareCodeByEmail(setupCode);
+  });
+  document.getElementById('enternow').addEventListener('click', () => {
+    hideLock();
+    connect();
+    setTimeout(focusInput, 350);
+  });
+
+  // switch identity: forget this device's code and join with another one
+  document.getElementById('switchcode').addEventListener('click', e => {
+    e.preventDefault();
+    localStorage.removeItem('bubbleclip-code');
+    codeModal.classList.remove('show');
+    if (ws) { ws.onclose = null; ws.close(); } // silent close — no auto-reconnect
+    dot.classList.remove('on');
+    statusEl.textContent = 'locked';
+    codeInput.value = '';
+    showLock('');
+  });
+
+  // from the setup/recovery view: maybe this device was handed a code already
+  document.getElementById('havecode').addEventListener('click', e => {
+    e.preventDefault();
+    showLock('');
+  });
+
+  // ---------- lockout recovery: fresh code from the lock screen ----------
+  const recoverLink = document.getElementById('recover');
+  const RECOVER_LABEL = 'Generate a fresh code';
+  let recoverArmed = false, recoverTimer = null;
+
+  recoverLink.addEventListener('click', async e => {
+    e.preventDefault();
+    if (!recoverArmed) {
+      recoverArmed = true;
+      recoverLink.classList.add('armed');
+      recoverLink.textContent = '⚠️ This wipes the clipboard for everyone — click again to confirm';
+      clearTimeout(recoverTimer);
+      recoverTimer = setTimeout(() => {
+        recoverArmed = false;
+        recoverLink.classList.remove('armed');
+        recoverLink.textContent = RECOVER_LABEL;
+      }, 6000);
+      return;
+    }
+    recoverArmed = false;
+    clearTimeout(recoverTimer);
+    recoverLink.classList.remove('armed');
+    recoverLink.textContent = RECOVER_LABEL;
+    try {
+      const r = await fetch('/api/code/recover', { method: 'POST' });
+      const data = await r.json();
+      if (!r.ok) { lockErr.textContent = data.error || 'Recovery failed'; return; }
+      setupCode = data.code;
+      localStorage.setItem('bubbleclip-code', data.code);
+      // present the fresh code with the usual copy / share options
+      showSetup();
+      document.querySelector('#setup-view h2').textContent = 'Fresh code generated';
+      document.querySelector('#setup-view p').innerHTML =
+        'The clipboard was cleared and every device was signed out.<br>Share this new code with your devices.';
+      document.getElementById('gencode').style.display = 'none';
+      document.getElementById('newcode-text').textContent = data.code;
+      document.getElementById('setup-actions').style.display = '';
+      document.getElementById('enternow').style.display = '';
+      gsap.fromTo('#setup-actions', { scale: .85, opacity: 0 }, { scale: 1, opacity: 1, duration: .55, ease: 'back.out(1.8)' });
+    } catch { lockErr.textContent = 'Server unreachable'; }
+  });
 
   // ---------- websocket ----------
   let ws, reconnectDelay = 500;
@@ -383,11 +733,14 @@
     };
     ws.onclose = e => {
       dot.classList.remove('on');
+      if (e.code === 4001 && rotating) {
+        rotating = false;              // we rotated the code ourselves — reconnect with the new one
+        setTimeout(connect, 150);
+        return;
+      }
       if (e.code === 4001) {
         statusEl.textContent = 'locked';
-        const hadCode = !!getCode();
-        showLock(hadCode ? 'Wrong code — check the server logs and try again.' : '');
-        if (hadCode) gsap.fromTo('.lock-card', { x: -8 }, { x: 0, duration: .4, ease: 'elastic.out(1.2, .25)' });
+        handleLocked(getCode() ? 'Wrong code — try again, or ask a connected device (🔑 Code).' : '');
         return; // wait for the user, don't hammer the server
       }
       if (e.code === 4029) {

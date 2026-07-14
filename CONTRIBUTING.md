@@ -6,7 +6,7 @@ Glad you're here. This is a small project on purpose, so contributing is simple.
 
 ```bash
 npm install
-npm start          # server on :8080, access code printed in the terminal
+npm start          # server on :5678, access code printed in the terminal
 ```
 
 No build step, no framework. The whole app is three things:

@@ -2,7 +2,7 @@
 :: Installs the BubbleClip agent to run hidden at login (no window).
 :: Edit SERVER and CODE below first — the code is printed in the server logs.
 
-set SERVER=http://localhost:8080
+set SERVER=http://localhost:5678
 set CODE=PUT-YOUR-CODE-HERE
 set SCRIPT=%~dp0bubbleclip-agent.ps1
 

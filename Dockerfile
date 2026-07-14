@@ -14,10 +14,10 @@ VOLUME ["/app/data"]
 
 USER node
 
-ENV PORT=8080
-EXPOSE 8080
+ENV PORT=5678
+EXPOSE 5678
 
 HEALTHCHECK --interval=30s --timeout=3s \
-  CMD wget -qO- http://localhost:8080/api/health || exit 1
+  CMD wget -qO- http://localhost:5678/api/health || exit 1
 
 CMD ["node", "server.js"]

@@ -6,17 +6,17 @@
 #                        (or a Capture dialog if ASK_CAPTURE=1)
 #
 # Usage:
-#   BUBBLECLIP_SERVER=http://192.168.1.50:8080 BUBBLECLIP_CODE=XXXX-XXXX ./bubbleclip-agent.sh
+#   BUBBLECLIP_SERVER=http://192.168.1.50:5678 BUBBLECLIP_CODE=XXXX-XXXX ./bubbleclip-agent.sh
 #
 # Env vars:
-#   BUBBLECLIP_SERVER       server URL                     (default http://localhost:8080)
+#   BUBBLECLIP_SERVER       server URL                     (default http://localhost:5678)
 #   BUBBLECLIP_CODE         access code from server logs   (required unless auth is disabled)
 #   BUBBLECLIP_DEVICE       device name shown to others    (default: hostname)
 #   BUBBLECLIP_INTERVAL     poll interval seconds          (default 1)
 #   BUBBLECLIP_ASK_SEND     1 = ask before sending         (default 1)
 #   BUBBLECLIP_ASK_CAPTURE  1 = ask before capturing       (default 0 = auto-capture + notify)
 
-SERVER="${BUBBLECLIP_SERVER:-http://localhost:8080}"
+SERVER="${BUBBLECLIP_SERVER:-http://localhost:5678}"
 CODE="${BUBBLECLIP_CODE:-}"
 DEVICE="${BUBBLECLIP_DEVICE:-$(hostname -s)}"
 INTERVAL="${BUBBLECLIP_INTERVAL:-1}"

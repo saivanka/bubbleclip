@@ -41,7 +41,7 @@ services:
     volumes:
       - bubbleclip-data:/app/data
     environment:
-      - PORT=8080
+      - PORT=5678
       - MAX_HISTORY=50
       # - ACCESS_CODE=${ACCESS_CODE}
     restart: unless-stopped

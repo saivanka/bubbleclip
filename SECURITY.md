@@ -9,6 +9,8 @@ If you find a security issue, please email **satyapavanvanka1999@gmail.com** ins
 BubbleClip is a self-hosted LAN tool. It's designed so that a stranger on the same network **cannot read or write your clipboard**:
 
 - Access-code authentication on every API call and WebSocket connection (auto-generated on first run if you don't set one)
+- First-run setup: the code can be claimed once, by the first device that opens the UI, before anyone has authenticated. The claim window closes permanently on first successful auth. If you set up a server and find it already claimed, someone beat you to it — delete `secret.json` in the data volume and restart to regenerate.
+- Lockout recovery (`POST /api/code/recover`, also on the lock screen): generates a fresh code *without* authentication, but **wipes the clipboard first** and disconnects every device. Design intent: you can always regain control of your own instance, but this path can never be used to read clipboard contents. It's a deliberate availability-over-exclusivity trade-off for a home/LAN tool: a network neighbour could take over an instance (empty), which is noisy and immediately obvious, but never silently steal data. Rate-limited per IP; disabled when `ACCESS_CODE` is pinned via env.
 - Constant-time code comparison, so timing attacks don't leak the code
 - Per-IP lockout: 10 failed attempts → 15-minute ban
 - WebSocket flood guard (per-connection message rate limit) and size limits on all inputs
@@ -23,6 +25,6 @@ What it deliberately does **not** do:
 
 ## Good practice
 
-- Treat the access code like a Wi-Fi password: fine to share with your own devices, rotate it if it leaks (`ACCESS_CODE=newcode`, or delete `secret.json` in the data volume for a fresh one).
+- Treat the access code like a Wi-Fi password: fine to share with your own devices, rotate it if it leaks. The 🔑 Code dialog in the UI has a one-click reset that disconnects every other device; alternatively set `ACCESS_CODE=newcode` or delete `secret.json` in the data volume.
 - Don't run `ACCESS_CODE=disabled` outside a network where you trust every device.
 - Keep the image updated; `ws` is the only runtime dependency, but it does get patches.

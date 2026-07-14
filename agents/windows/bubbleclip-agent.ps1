@@ -6,7 +6,7 @@
 # Env:   BUBBLECLIP_SERVER, BUBBLECLIP_CODE (access code from server logs),
 #        BUBBLECLIP_DEVICE, BUBBLECLIP_ASK_SEND=1 (confirm dialog before sending)
 
-$Server   = if ($env:BUBBLECLIP_SERVER)  { $env:BUBBLECLIP_SERVER }  else { "http://localhost:8080" }
+$Server   = if ($env:BUBBLECLIP_SERVER)  { $env:BUBBLECLIP_SERVER }  else { "http://localhost:5678" }
 $Code     = if ($env:BUBBLECLIP_CODE)    { $env:BUBBLECLIP_CODE }    else { "" }
 $Device   = if ($env:BUBBLECLIP_DEVICE)  { $env:BUBBLECLIP_DEVICE }  else { $env:COMPUTERNAME }
 $Interval = if ($env:BUBBLECLIP_INTERVAL){ [int]$env:BUBBLECLIP_INTERVAL } else { 1 }
