@@ -2,9 +2,25 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
 <title>BubbleClip — Network Clipboard</title>
+<meta name="description" content="Self-hosted realtime clipboard for your network — text floats as bubbles, click to burst & copy." />
+
+<!-- PWA -->
+<link rel="manifest" href="/manifest.json" />
+<meta name="theme-color" content="#0a0d14" media="(prefers-color-scheme: dark)" />
+<meta name="theme-color" content="#f6f8fe" media="(prefers-color-scheme: light)" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="BubbleClip" />
+
+<!-- icons -->
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🫧</text></svg>" />
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png" />
+<link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16.png" />
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+
 <script src="/vendor/gsap.min.js"></script>
 <script>window.gsap || document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"><\/script>');</script>
 <style>
@@ -70,8 +86,9 @@
     --latest-shadow: inset 0 0 22px rgba(12,166,120,.14), 0 0 22px rgba(12,166,120,.28), 0 12px 34px rgba(90,120,220,.14);
   }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overscroll-behavior: none; }
+  html { text-size-adjust: none; -webkit-text-size-adjust: none; }
   body {
     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     background-color: var(--bg);
@@ -81,13 +98,15 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    overscroll-behavior: none;
     transition: background-color .4s, color .4s;
   }
 
   /* ---------- header ---------- */
   header {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 14px 22px; flex: 0 0 auto; z-index: 5;
+    padding: calc(14px + env(safe-area-inset-top)) calc(22px + env(safe-area-inset-right)) 14px calc(22px + env(safe-area-inset-left));
+    flex: 0 0 auto; z-index: 5;
   }
   .brand { display: flex; align-items: center; gap: 10px; font-weight: 600; letter-spacing: .3px; }
   .logo {
@@ -96,7 +115,7 @@
                 linear-gradient(135deg, var(--accent), var(--pink));
     box-shadow: 0 4px 18px rgba(79,140,255,.4), inset 0 0 12px rgba(255,255,255,.25);
   }
-  .meta { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--muted); }
+  .meta { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--muted); flex-wrap: wrap; justify-content: flex-end; }
   .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--danger); display: inline-block; margin-right: 6px; transition: background .3s; }
   .dot.on { background: var(--accent-2); box-shadow: 0 0 8px var(--accent-2); }
   .btn-ghost {
@@ -105,6 +124,7 @@
   }
   .btn-ghost:hover { color: var(--danger); border-color: var(--danger); }
   #codebtn:hover { color: var(--accent); border-color: var(--accent); }
+  #install:hover { color: var(--accent-2); border-color: var(--accent-2); }
   #theme {
     background: none; border: 1px solid var(--btn-border); color: var(--muted);
     width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 15px;
@@ -164,7 +184,8 @@
 
   /* ---------- dock ---------- */
   #dock {
-    flex: 0 0 auto; padding: 10px 18px 18px; z-index: 5;
+    flex: 0 0 auto; z-index: 5;
+    padding: 10px calc(18px + env(safe-area-inset-right)) calc(18px + env(safe-area-inset-bottom)) calc(18px + env(safe-area-inset-left));
     display: flex; justify-content: center;
   }
   .dock-inner {
@@ -181,7 +202,7 @@
   }
   #input {
     width: 100%; background: none; border: none; outline: none; resize: none;
-    color: var(--text); font: inherit; font-size: 14.5px; line-height: 1.5;
+    color: var(--text); font: inherit; font-size: 16px; line-height: 1.5;
     max-height: 120px; min-height: 24px; caret-color: var(--accent);
   }
   #input::placeholder { color: var(--hint); }
@@ -300,9 +321,11 @@
 
   /* toast */
   #toast {
-    position: fixed; left: 50%; bottom: 110px; transform: translateX(-50%) translateY(20px);
+    position: fixed; left: 50%; bottom: calc(110px + env(safe-area-inset-bottom));
+    transform: translateX(-50%) translateY(20px);
     background: var(--toast-bg); border: 1px solid var(--toast-border); color: var(--text);
     padding: 9px 18px; border-radius: 24px; font-size: 13px;
+    max-width: calc(100vw - 40px); text-align: center;
     opacity: 0; pointer-events: none; transition: all .3s cubic-bezier(.2,1.2,.4,1); z-index: 150;
     box-shadow: 0 8px 30px rgba(0,0,0,.18);
   }
@@ -310,9 +333,26 @@
   #toast .ok { color: var(--accent-2); }
 
   @media (max-width: 600px) {
-    header { padding: 12px 14px; }
+    header {
+      padding: calc(12px + env(safe-area-inset-top)) calc(14px + env(safe-area-inset-right)) 12px calc(14px + env(safe-area-inset-left));
+    }
     .meta .devices-label { display: none; }
+    .meta { gap: 8px; font-size: 12px; }
+    .btn-ghost { padding: 6px 10px; }
     .bubble { font-size: 11px; }
+    #dock {
+      padding: 8px calc(10px + env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) calc(10px + env(safe-area-inset-left));
+    }
+    .dock-inner { padding: 10px 12px; border-radius: 16px; }
+    .lock-card { padding: 28px 22px; }
+    #send { padding: 8px 16px; }
+  }
+
+  @media (max-width: 380px) {
+    .brand { font-size: 14px; }
+    .logo { width: 28px; height: 28px; }
+    .hint { display: none; }
+    .dock-row { justify-content: flex-end; }
   }
 </style>
 </head>
@@ -323,6 +363,7 @@
   <div class="meta">
     <span><span class="dot" id="dot"></span><span id="status">connecting…</span></span>
     <span id="devices">— <span class="devices-label">devices</span></span>
+    <button class="btn-ghost" id="install" title="Install BubbleClip as an app" style="display:none">⬇ Install</button>
     <button class="btn-ghost" id="codebtn" title="Share or reset the access code">🔑 Code</button>
     <button class="btn-ghost" id="clear">Clear all</button>
     <button id="theme" title="Toggle theme">☀️</button>
@@ -1051,6 +1092,34 @@
   window.addEventListener('resize', () => {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => applyLayout(null), 150);
+  });
+
+  // ---------- PWA: install prompt + service worker ----------
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    });
+  }
+
+  let deferredInstall = null;
+  const installBtn = document.getElementById('install');
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    deferredInstall = e;
+    if (installBtn) installBtn.style.display = '';
+  });
+  if (installBtn) {
+    installBtn.addEventListener('click', async () => {
+      if (!deferredInstall) return;
+      deferredInstall.prompt();
+      await deferredInstall.userChoice;
+      deferredInstall = null;
+      installBtn.style.display = 'none';
+    });
+  }
+  window.addEventListener('appinstalled', () => {
+    if (installBtn) installBtn.style.display = 'none';
+    showToast('<span class="ok">✓</span> BubbleClip installed');
   });
 })();
 </script>

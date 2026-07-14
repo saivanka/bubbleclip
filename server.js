@@ -185,7 +185,10 @@ function clearHistory() {
 
 // ---------- http ----------
 const PUBLIC_DIR = path.join(__dirname, 'public');
-const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon' };
+const MIME = {
+  '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml',
+  '.png': 'image/png', '.ico': 'image/x-icon', '.json': 'application/json', '.webmanifest': 'application/manifest+json',
+};
 
 const SECURITY_HEADERS = {
   'X-Content-Type-Options': 'nosniff',

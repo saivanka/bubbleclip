@@ -522,12 +522,14 @@ func authorize(w http.ResponseWriter, r *http.Request) bool {
 }
 
 var mimeTypes = map[string]string{
-	".html": "text/html; charset=utf-8",
-	".js":   "text/javascript",
-	".css":  "text/css",
-	".svg":  "image/svg+xml",
-	".png":  "image/png",
-	".ico":  "image/x-icon",
+	".html":        "text/html; charset=utf-8",
+	".js":          "text/javascript",
+	".css":         "text/css",
+	".svg":         "image/svg+xml",
+	".png":         "image/png",
+	".ico":         "image/x-icon",
+	".json":        "application/json",
+	".webmanifest": "application/manifest+json",
 }
 
 // ---------- handlers ----------
