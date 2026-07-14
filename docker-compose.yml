@@ -2,6 +2,7 @@ services:
   bubbleclip:
     build: .
     container_name: bubbleclip
+    init: true          # proper signal handling & zombie reaping (PID 1)
     ports:
       # To make it reachable ONLY via Tailscale (invisible to normal LAN),
       # prefix with this host's Tailscale IP, e.g.:

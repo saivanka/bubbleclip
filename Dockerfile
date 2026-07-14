@@ -1,10 +1,22 @@
-FROM node:20-alpine
+# ---- stage 1: install production deps only ----
+FROM node:22-alpine AS deps
+WORKDIR /app
+COPY package.json ./
+RUN npm install --omit=dev --no-audit --no-fund \
+ && npm cache clean --force
+
+# ---- stage 2: minimal runtime ----
+FROM node:22-alpine
+
+# npm/npx/corepack aren't needed to run the server — dropping them
+# shaves ~30 MB off the image and shrinks the attack surface
+RUN rm -rf /usr/local/lib/node_modules /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack /opt/yarn*
+
+ENV NODE_ENV=production \
+    PORT=5678
 
 WORKDIR /app
-
-COPY package.json ./
-RUN npm install --omit=dev
-
+COPY --from=deps /app/node_modules ./node_modules
 COPY server.js ./
 COPY public ./public
 
@@ -13,11 +25,9 @@ RUN mkdir -p /app/data && chown -R node:node /app
 VOLUME ["/app/data"]
 
 USER node
-
-ENV PORT=5678
 EXPOSE 5678
 
-HEALTHCHECK --interval=30s --timeout=3s \
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s \
   CMD wget -qO- http://localhost:5678/api/health || exit 1
 
 CMD ["node", "server.js"]
