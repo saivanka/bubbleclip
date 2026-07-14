@@ -1,33 +1,36 @@
-# ---- stage 1: install production deps only ----
-FROM node:22-alpine AS deps
-WORKDIR /app
-COPY package.json ./
-RUN npm install --omit=dev --no-audit --no-fund \
- && npm cache clean --force
+# BubbleClip — Go build: single static binary, UI embedded, image ≈ 8 MB.
+# (Node alternative available in Dockerfile.node.)
 
-# ---- stage 2: minimal runtime ----
-FROM node:22-alpine
+# ---- stage 1: compile ----
+FROM golang:1.23-alpine AS build
+WORKDIR /src
 
-# npm/npx/corepack aren't needed to run the server — dropping them
-# shaves ~30 MB off the image and shrinks the attack surface
-RUN rm -rf /usr/local/lib/node_modules /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack /opt/yarn*
-
-ENV NODE_ENV=production \
-    PORT=5678
-
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
-COPY server.js ./
+COPY go.mod main.go ./
 COPY public ./public
 
-# persisted clipboard history + access code, owned by the unprivileged user
-RUN mkdir -p /app/data && chown -R node:node /app
+# go mod tidy resolves + verifies deps (gorilla/websocket only) during build,
+# so the repo doesn't need a committed go.sum
+RUN go mod tidy \
+ && CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/bubbleclip . \
+ && mkdir -p /out/data \
+ && chown -R 1000:1000 /out
+
+# ---- stage 2: empty base, nothing but the binary ----
+FROM scratch
+
+COPY --from=build /out/bubbleclip /bubbleclip
+# uid 1000 matches the Node image's "node" user, so existing data volumes carry over
+COPY --from=build --chown=1000:1000 /out/data /app/data
+
+ENV PORT=9600 \
+    DATA_FILE=/app/data/clipboard.json
+
+USER 1000:1000
+EXPOSE 9600
 VOLUME ["/app/data"]
 
-USER node
-EXPOSE 5678
-
+# the binary doubles as its own healthcheck probe (no shell in scratch)
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s \
-  CMD wget -qO- http://localhost:5678/api/health || exit 1
+  CMD ["/bubbleclip", "-health"]
 
-CMD ["node", "server.js"]
+ENTRYPOINT ["/bubbleclip"]

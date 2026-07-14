@@ -1,0 +1,39 @@
+# BubbleClip behind a Cloudflare Tunnel — no open ports, no port forwarding,
+# works behind CGNAT. HTTPS and WebSockets handled by Cloudflare.
+#
+#   1. Cloudflare dashboard → Zero Trust → Networks → Tunnels
+#      → Create a tunnel → "Cloudflared" → name it: bubbleclip
+#   2. Copy the tunnel token into .env:   TUNNEL_TOKEN=eyJh...
+#   3. In the tunnel's "Public Hostname" tab add:
+#        Subdomain: bubbleclip   Domain: <your Cloudflare domain>
+#        Service:   HTTP   →   bubbleclip:5678
+#   4. Set ACCESS_CODE in .env, then:
+#        docker compose -f docker-compose.tunnel.yml up -d --build
+#
+# Note: the public hostname must be on a domain that's in YOUR Cloudflare
+# account. Free subdomains from other platforms (like dnsdp.org) can't be
+# used with a tunnel.
+
+services:
+  bubbleclip:
+    build: .
+    container_name: bubbleclip
+    init: true
+    volumes:
+      - bubbleclip-data:/app/data
+    restart: unless-stopped
+    environment:
+      - PORT=5678
+      - MAX_HISTORY=50
+      - ACCESS_CODE=${ACCESS_CODE:?set ACCESS_CODE in .env before going public}
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: bubbleclip-tunnel
+    command: tunnel --no-autoupdate run --token ${TUNNEL_TOKEN:?set TUNNEL_TOKEN in .env}
+    depends_on:
+      - bubbleclip
+    restart: unless-stopped
+
+volumes:
+  bubbleclip-data:

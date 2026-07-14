@@ -15,6 +15,8 @@ docker compose up -d --build
 docker logs bubbleclip   # ← grab your access code from here
 ```
 
+The default image is a single static Go binary with the UI embedded — about **8 MB**, built `FROM scratch`, nothing inside but BubbleClip itself. Prefer Node? The same server exists as `server.js`; build it with `docker build -f Dockerfile.node -t bubbleclip .` (~95 MB) or just run `npm install && npm start`. Both backends speak the identical protocol and share the same data format.
+
 Open `http://<host-ip>:5678` on any device, enter the code once, and start pasting. That's the whole setup.
 
 No Docker? `npm install && npm start` works too (Node 18+).

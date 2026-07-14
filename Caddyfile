@@ -1,0 +1,7 @@
+# Caddy reverse proxy for public hosting.
+# Automatic HTTPS via Let's Encrypt — no cert setup needed.
+# WebSockets are proxied automatically.
+
+bubbleclip.dpdns.org {
+	reverse_proxy bubbleclip:9600
+}

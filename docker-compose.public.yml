@@ -1,0 +1,43 @@
+# Public hosting behind a domain, with automatic HTTPS.
+#
+#   1. Point your domain's A record at your public IP
+#   2. Forward TCP ports 80 and 443 on your router to this machine
+#   3. Set ACCESS_CODE in .env  (required — this is the public internet)
+#   4. docker compose -f docker-compose.public.yml up -d --build
+#
+# The app itself publishes no ports — it's only reachable through Caddy.
+
+services:
+  bubbleclip:
+    build: .
+    container_name: bubbleclip
+    ports:
+      - "127.0.0.1:9600:9600" 
+    init: true
+    volumes:
+      - bubbleclip-data:/app/data
+    restart: unless-stopped
+    environment:
+      - MAX_HISTORY=50
+      # Pinned code is mandatory advice for public exposure: it also
+      # disables the unauthenticated lock-screen recovery endpoint.
+      - ACCESS_CODE=${ACCESS_CODE:?set ACCESS_CODE in .env before going public}
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: bubbleclip-caddy
+    ports:
+      - "81:81"
+      - "444:444"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - bubbleclip
+    restart: unless-stopped
+
+volumes:
+  bubbleclip-data:
+  caddy-data:
+  caddy-config:
