@@ -22,6 +22,10 @@ No build step, no framework. The whole app is three things:
 - Test the realtime path with two browser tabs (they count as two devices) before opening the PR.
 - If you touch the server, run at least: connect with a wrong access code (should get rejected), a right one (should sync), and a paste round-trip.
 
+## Code of Conduct
+
+By participating, you're expected to uphold [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
+
 ## Bugs & ideas
 
 Open an issue with your OS, browser, and how you're running the server (Docker / bare Node / Tailscale). For anything security-related, see [SECURITY.md](SECURITY.md) first — please don't post exploits in public issues.

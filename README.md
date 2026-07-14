@@ -1,5 +1,11 @@
 # 🫧 BubbleClip
 
+[![CI](https://github.com/saivanka/bubbleclip/actions/workflows/ci.yml/badge.svg)](https://github.com/saivanka/bubbleclip/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Go](https://img.shields.io/badge/Go-1.23-00ADD8?logo=go&logoColor=white)](go.mod)
+[![Node](https://img.shields.io/badge/Node-%3E%3D18-339933?logo=node.js&logoColor=white)](package.json)
+[![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white)](Dockerfile)
+
 **A realtime clipboard that lives on your network.** Copy on one device, and the text floats up as a bubble on every screen. Click the bubble — it bursts, and the text is on that device's clipboard.
 
 I built this because I was tired of emailing myself links, or opening WhatsApp just to move one line of text from my laptop to my phone. Everything that exists for this is either cloud-based (your clipboard goes through someone else's server) or clunky. BubbleClip runs on your own machine, in one small Docker container, and nothing ever leaves your network.
@@ -115,3 +121,5 @@ Stuck with setup? Email **bubbleclipservice@gmail.com** (also linked from the ap
 ## License
 
 [MIT](LICENSE) — do what you like with it.
+
+Third-party: `public/vendor/gsap.min.js` is vendored under [GreenSock's Standard License](https://gsap.com/standard-license), not MIT.
